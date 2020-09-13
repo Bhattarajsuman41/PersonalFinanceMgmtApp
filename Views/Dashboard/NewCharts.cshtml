@@ -1,0 +1,170 @@
+﻿@model PersonalFinanceMgmtApp.ViewModel.ChartsVM
+    <div class="dropdown mb-3">
+        @*<button class="btn btn-secondary dropdown-toggle font-weight-normal" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Select Chart
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="">Line</a>
+            <a class="dropdown-item" href="#">Pie</a>
+            <a class="dropdown-item" href="#">Scatter</a>
+        </div>*@
+        @Html.DropDownListFor(model => model.chartId, new SelectList(Model.chartsValue, "Value", "Text"),"Select Chart...")
+    </div>
+
+<canvas id="lineChart" style="display:none;"></canvas>
+<div class="SelectPieChart border border-primary rounded" style="display:none;">
+    @Html.DropDownListFor(model => model.monthId, new SelectList(Model.Months, "Value", "Text"),"Select Month..")
+    <canvas id="pieChart"></canvas>
+</div>
+<div class="SelectedScatterChart border border-primary rounded" style="display:none;">
+    @Html.DropDownListFor(model => model.monthId, new SelectList(Model.Months, "Value", "Text"), "Select Month..")
+    @Html.DropDownListFor(model => model.expenseId, new SelectList(Model.expenseTypes, "Value", "Text"), "Select Expense..")
+    <canvas id="scatterChart"></canvas>
+</div>
+
+<script src="~/Scripts/jquery.min.js"></script>
+<script src="~/Scripts/mdb.min.js"></script>
+<script src="~/Scripts/popper.min.js"></script>
+<script src="~/Scripts/chart.js"></script>
+<script src="~/Scripts/BarChart.js"></script>
+<script src="~/Scripts/PieChart.js"></script>
+<script src="~/Scripts/ScatterChart.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#chartId').on('change', function () {
+            
+            var selectedvalue = $(this).children("option:selected").text();
+
+            //Section LineCharts
+            if (selectedvalue == "Line") {
+                $.ajax({
+                    type: "GET",
+                    url: "GetValueForCharts/Dashboard",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        debugger;
+                        
+                        var result = JSON.parse(response);
+
+                        let group = result.reduce((r, a) => {
+                            r[a.expenseType] = [...r[a.expenseType] || [], a.expenseForSingleExpenseTypeVMs];
+                            return r;
+                        }, {});
+
+                        if (group.hasOwnProperty('Bills') == true){
+                            for (var i = 0; i < group.Bills.length; i++)
+                             {
+                                myLineChart.data.datasets[0].data[group.Bills[i][0].monthId - 1] = group.Bills[i][0].totalAmount;
+                            }
+                        }
+                        if (group.hasOwnProperty('Shopping') == true) {
+
+                            for (var i = 0; i < group.Shopping.length; i++) {
+                                myLineChart.data.datasets[1].data[group.Shopping[i][0].monthId - 1] = group.Shopping[i][0].totalAmount;
+                            }
+                        }
+                        if (group.hasOwnProperty('Food') == true) {
+
+                            for (var i = 0; i < group.Food.length; i++) {
+                                myLineChart.data.datasets[2].data[group.Food[i][0].monthId - 1] = group.Food[i][0].totalAmount;
+                            }
+                        }
+                        if (group.hasOwnProperty('Others') == true) {
+
+                            for (var i = 0; i < group.Others.length; i++) {
+                                myLineChart.data.datasets[3].data[group.Others[i][0].monthId] = group.Others[i][0].totalAmount;
+                            }
+                        }
+                       
+                        myLineChart.update();
+                        $("#lineChart").show();
+                        $(".SelectedScatterChart").hide();
+                        $(".SelectPieChart").hide();
+                    },
+                    error: function () {
+                        alert("Error!!!")
+                    }
+
+                });
+              
+            }
+
+            //Section PieCharts
+            if (selectedvalue == "Pie") {
+                debugger;
+               
+                $.ajax({
+                    type: "GET",
+                    url: "GetValueForMonthForPieChart/Dashboard",
+                   
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        debugger;
+
+                        var result = JSON.parse(response);
+
+                        myPieChart.data.datasets[0].data[0] = result.totalBlc;
+                        myPieChart.data.datasets[0].data[1] = result.totalShping;
+                        myPieChart.data.datasets[0].data[2] = result.totalBills;
+                        myPieChart.data.datasets[0].data[3] = result.TotalFd;
+                        myPieChart.data.datasets[0].data[4] = result.TotalOthers;
+                        myPieChart.update();
+                        $("#lineChart").hide();
+                        $(".SelectedScatterChart").hide();
+                        $(".SelectPieChart").show();
+                    },
+                    error: function () {
+                        alert("Error!!!")
+                    }
+
+                });
+
+            } 
+
+           
+          
+            if (selectedvalue == "Scatter") {
+                $("#lineChart").hide();
+                $(".SelectPieChart").hide();
+                $(".SelectedScatterChart").show();
+            }
+
+        });
+
+        $('#monthId').on('change', function () {
+            var monthId = $(this).children("option:selected").val();
+            debugger;
+            $.ajax({
+                type: "GET",
+                url: "GetValueForMonthForPieChart/Dashboard",
+                data: { monthId: monthId },
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    debugger;
+
+                    var result = JSON.parse(response);
+
+                    myPieChart.data.datasets[0].data[0] = result.totalBlc;
+                    myPieChart.data.datasets[0].data[1] = result.totalShping;
+                    myPieChart.data.datasets[0].data[2] = result.totalBills;
+                    myPieChart.data.datasets[0].data[3] = result.TotalFd;
+                    myPieChart.data.datasets[0].data[4] = result.TotalOthers;
+                    myPieChart.update();
+                    $("#lineChart").hide();
+                    $(".SelectedScatterChart").hide();
+                    $(".SelectPieChart").show();
+                },
+                error: function () {
+                    alert("Error!!!")
+                }
+
+            });
+
+        });
+    });
+
+</script>

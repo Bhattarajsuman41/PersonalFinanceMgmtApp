@@ -1,0 +1,65 @@
+﻿@model PersonalFinanceMgmtApp.ViewModel.NewExpenseEntry
+    <p>@TempData["SuccessMessage"]</p>
+@using (Html.BeginForm("SaveNewExpense","Dashboard" ,FormMethod.Post))
+{
+
+<div class="card">
+    <div class="card-header text-lg-center bg-success">
+        <h3 class=" text-white">New Expense Entry</h3>
+    </div>
+    <div class="card-body">
+        <!--Datepicker Section-->
+
+        @Html.EditorFor(model => model.entryDate, new { htmlAttributes = new { @class = "EnterDate", @placeholder= "Click to enter date" } })
+        <div class="dropdown mb-3">
+           @Html.DropDownListFor(model => model.expenseId, new SelectList(Model.ExpenseTypes, "Value", "Text"), "Select ...")
+        </div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Amount</span>
+            </div>
+           @Html.EditorFor(model => model.ExpenseAmount)
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </div>
+</div>
+}
+<link href="~/Content/themes/base/jquery-ui.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-ui-1.12.1.js"></script>
+
+<script>
+    // Data Picker Initialization
+    $(document).ready(function () {
+        $(".EnterDate").val("Enter Date");
+        $(".EnterDate").datepicker({
+            
+
+            dateFormat: "mm-dd-yy",
+            changeMonth: true,
+            changeYear: true   
+
+        });
+
+        //$.ajax({
+        //    type: "POST",
+        //    url: "SaveNewExpense",
+        //    success: function () {
+        //        debugger;
+        //        alert("Saved Successfully!!", 1000)
+        //    },
+        //    error: function () {
+        //        debugger;
+        //        alert("Error!!", 1000)
+        //        //alert("Error");
+        //    }
+        //})
+        function OnSuccess() {
+            alert('saved');
+        }
+        function OnFailure() {
+            alert('error');
+        }  
+    });
+</script>

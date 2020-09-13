@@ -1,0 +1,43 @@
+﻿@model PersonalFinanceMgmtApp.ViewModel.SetDashBoardVM
+@using PagedList.Mvc;
+
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/searchbar.css" rel="stylesheet" />
+
+@using (Html.BeginForm("DisplayResult", "Dashboard", FormMethod.Get))
+{
+<div class="search-form row">
+    @Html.DropDownListFor(model => model.monthId, new SelectList(Model.Months, "Value", "Text"), "Search By Month..", htmlAttributes: new { @class = "search-dropdown " })
+    @Html.DropDownListFor(model => model.expenseId, new SelectList(Model.ExpenseTypes, "Value", "Text"), "Search By Expense..", htmlAttributes: new { @class = "search-dropdown " })
+    <button class="search-btn" type="submit">Search</button>
+</div>
+}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-hover table-striped table-bordered border rounded">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">ExpenseType</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.expenseRecords)
+                    {
+                        <tr>
+                            <td>@item.expenseType</td>
+                            <td>@item.amount</td>
+                            <td>@item.month</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div id="pagination">
+                <br />
+                Page @(Model.expenseRecords.PageCount < Model.expenseRecords.PageNumber ? 0 : Model.expenseRecords.PageNumber) of @Model.expenseRecords.PageCount
+
+                @Html.PagedListPager(Model.expenseRecords, page => Url.Action("DisplayResult", new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))
+            </div>
+        </div>
+    </div>

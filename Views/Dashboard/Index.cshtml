@@ -1,0 +1,163 @@
+﻿@model PersonalFinanceMgmtApp.ViewModel.SetDashBoardVM
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/searchbar.css" rel="stylesheet" />
+
+<style>
+    .sidecolumn {
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+</style>
+@using Microsoft.AspNet.Identity
+@if (Request.IsAuthenticated)
+{
+    <div class="container-fluid">
+        <div class="row">
+            <div class="header col-md-6"><h6 class="display-4"><strong class="border rounded bg-info text-white">@Model.totalExpenseForMonth.MonthName</strong> Overview</h6></div>
+            @using (Html.BeginForm("Index", "Dashboard", FormMethod.Get))
+            {
+                <div class="search-form col-md-6">
+                    @Html.DropDownListFor(model => model.monthId, new SelectList(Model.Months, "Value", "Text"), "Search By Month..", htmlAttributes: new { @class = "search-dropdown " })
+                    <button class="search-btn" type="submit">Search</button>
+                </div>
+            }
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="jumbotron jumbotron-fluid bg-success" style="padding-bottom: 70px;">
+                    <div class="container">
+                        <p class=" text-white">Available</p>
+                        <h6 class="display-4 text-white">@Model.totalExpenseForMonth.totalBlc</h6>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="jumbotron jumbotron-fluid bg-primary sidecolumn">
+                    <div class="container">
+                        <p class="lead text-white">Food&Drinks</p>
+                        <h6 class="display-4 text-white">@Model.totalExpenseForMonth.TotalFd </h6>
+
+                    </div>
+                </div>
+                <div class="jumbotron jumbotron-fluid bg-danger sidecolumn">
+                    <div class="container">
+                        <p class="lead text-white">Bills</p>
+                        <h6 class="display-4 text-white">@Model.totalExpenseForMonth.totalBills </h6>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="jumbotron jumbotron-fluid bg-warning sidecolumn">
+                    <div class="container">
+                        <p class="lead text-white">Shopping</p>
+                        <h6 class="display-4 text-white">@Model.totalExpenseForMonth.totalShping </h6>
+
+                    </div>
+                </div>
+                <div class="jumbotron jumbotron-fluid bg-secondary sidecolumn">
+                    <div class="container">
+                        <p class="lead text-white">Others</p>
+                        <h6 class="display-4 text-white">@Model.totalExpenseForMonth.TotalOthers </h6>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <table class="table table-hover table-striped table-bordered border rounded">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">ExpenseType</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.expenseRecords)
+                        {
+                            <tr>
+                                <td>@item.expenseType</td>
+                                <td>@item.amount</td>
+                                <td>@item.entryDate</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div id="pagination">
+                    <br />
+                    Page @(Model.expenseRecords.PageCount < Model.expenseRecords.PageNumber ? 0 : Model.expenseRecords.PageNumber) of @Model.expenseRecords.PageCount
+
+                    @Html.PagedListPager(Model.expenseRecords, page => Url.Action("index", new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))
+                </div>
+            </div>
+            <div class="col-md-4">
+                <canvas id="myChart" style="max-width: 500px; display: block; height: 180px; width: 293px;"></canvas>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class=""><h1 class="dsplay-4">Please Login or Register First !! Thank You</h1></div>
+}
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/mdb.min.js"></script>
+    <script src="~/Scripts/popper.min.js"></script>
+    <script src="~/Scripts/chart.js"></script>
+
+    <script>
+    $(document).ready(function () {
+        debugger;
+        var modelValue = @Html.Raw(Json.Encode(Model));
+        var month = modelValue.totalExpenseForMonth.MonthName;
+        var totalShopping = modelValue.totalExpenseForMonth.totalShping;
+        var totalfd = modelValue.totalExpenseForMonth.TotalFd;
+        var totalbill = modelValue.totalExpenseForMonth.totalBills;
+        var totalOthers = modelValue.totalExpenseForMonth.TotalOthers
+        var ctx = document.getElementById("myChart").getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ["Shopping", "Bills", "Foods", "Others"],
+                datasets: [{
+                    label: 'Expense for ' + month,
+                    data: [],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+        myChart.data.datasets[0].data[0] = totalShopping;
+
+        myChart.data.datasets[0].data[1] = totalbill;
+        myChart.data.datasets[0].data[2] = totalfd;
+        myChart.data.datasets[0].data[3] = totalOthers;
+        myChart.update();
+    });
+    </script>
