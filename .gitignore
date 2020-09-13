@@ -245,7 +245,6 @@ UpgradeLog*.htm
 ServiceFabricBackup/
 *.rptproj.bak
 
-
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout
