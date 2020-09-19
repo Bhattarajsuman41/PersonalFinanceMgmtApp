@@ -83,7 +83,7 @@
                             <tr>
                                 <td>@item.expenseType</td>
                                 <td>@item.amount</td>
-                                <td>@item.entryDate</td>
+                                <td>@item.entryDate.ToShortDateString()</td>
                             </tr>
                         }
                     </tbody>
@@ -105,7 +105,7 @@ else
 {
     <div class=""><h1 class="dsplay-4">Please Login or Register First !! Thank You</h1></div>
 }
-    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
     <script src="~/Scripts/mdb.min.js"></script>
     <script src="~/Scripts/popper.min.js"></script>
     <script src="~/Scripts/chart.js"></script>
@@ -113,6 +113,31 @@ else
     <script>
     $(document).ready(function () {
         debugger;
+        $("#monthId").on("change",function () {
+            debugger;
+            var monthId = $(this).children("option:selected").val();
+            debugger;
+            $.ajax({
+                type: "GET",
+                url: "Dashboard/CheckExpensesMonth",
+                data: { monthId: monthId },
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    debugger;
+                    if (response == "false") {
+                        alert("there is no expense for this month!! please choose another!!! OR enter the Expense for the month!!!",1000);
+                    }
+
+                   
+                },
+                error: function () {
+                    alert("Error !!!");
+                }
+
+            });
+        })
+
         var modelValue = @Html.Raw(Json.Encode(Model));
         var month = modelValue.totalExpenseForMonth.MonthName;
         var totalShopping = modelValue.totalExpenseForMonth.totalShping;
@@ -159,5 +184,8 @@ else
         myChart.data.datasets[0].data[2] = totalfd;
         myChart.data.datasets[0].data[3] = totalOthers;
         myChart.update();
+
+        //function for success 
+        
     });
     </script>

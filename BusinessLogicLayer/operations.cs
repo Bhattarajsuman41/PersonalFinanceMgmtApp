@@ -53,11 +53,11 @@ namespace PersonalFinanceMgmtApp.BusinessLogicLayer
             totalExpenseForMonth expense = new totalExpenseForMonth();
             var monthId = er.ElementAt(0).entryDate.Month;
             expense.MonthName = db.Months.Where(x => x.MonthId == monthId).Select(x => x.MonthName).First().ToString();
-            foreach (var item in er.OrderByDescending(x=>x.expenseId))
+            foreach (var item in er.OrderByDescending(x => x.expenseId))
             {
                 var eId = item.expenseId;
                 var eType = item.expenseType;
-               
+
 
                 if (eId == 2 && eType == "Shopping")
                 {
@@ -73,13 +73,13 @@ namespace PersonalFinanceMgmtApp.BusinessLogicLayer
                     expense.totalBills += Convert.ToInt32(item.amount);
                 }
 
-                else if(eId== 5)
+                else if (eId == 5)
                 {
                     expense.TotalOthers += Convert.ToInt32(item.amount);
                 }
                 else if (eId == 1 && eType == "Balance")
                 {
-                    expense.totalBlc += Convert.ToInt32(item.amount)-(expense.totalBills+ expense.totalShping+expense.TotalFd+expense.TotalOthers);
+                    expense.totalBlc += Convert.ToInt32(item.amount) - (expense.totalBills + expense.totalShping + expense.TotalFd + expense.TotalOthers);
                 }
             }
             return expense;
@@ -130,7 +130,7 @@ namespace PersonalFinanceMgmtApp.BusinessLogicLayer
             }
             else
             {
-                var result = db.NewExpenseEntryRecords.Where(x=>x.UserId== userId).ToList().OrderByDescending(x => x.MonthId).Select(x => x.MonthId).First();
+                var result = db.NewExpenseEntryRecords.Where(x => x.UserId == userId).ToList().OrderByDescending(x => x.MonthId).Select(x => x.MonthId).First();
 
                 var list1 = db.NewExpenseEntryRecords.Where(x => x.MonthId == result && x.UserId == userId).ToList();
 
@@ -167,16 +167,44 @@ namespace PersonalFinanceMgmtApp.BusinessLogicLayer
 
 
             }
+            record.MonthName = db.Months.Where(x => x.MonthId == monthId).Select(x => x.MonthName).FirstOrDefault();
 
-            return record ;
+            return record;
+        }
+
+        public string CheckExpensesMonth(int monthId, string userid)
+        {
+            try
+            {
+                
+                    var result = db.NewExpenseEntryRecords.Where(x => x.MonthId == monthId && x.UserId == userid).ToList();
+                    if (result.Count >0)
+                    {
+                        return "true";
+                    }
+                    else
+                    {
+                        return "false";
+
+                    }
+            
+               
+              
+            }
+            catch (Exception e)
+            {
+                throw new NullReferenceException("Value Cannot be null", e);
+            }
+
+
         }
 
 
-        public IPagedList<ExpenseRecord> getAllSavedExpense(int? expenseId,int? monthId, int? page, string userId)
+        public IPagedList<ExpenseRecord> getAllSavedExpense(int? expenseId, int? monthId, int? page, string userId)
         {
-           if(monthId != null && expenseId == null)
+            if (monthId != null && expenseId == null)
             {
-                var result = db.NewExpenseEntryRecords.Where(x=>x.MonthId == monthId && x.UserId == userId).ToList().OrderByDescending(x => x.MonthId);
+                var result = db.NewExpenseEntryRecords.Where(x => x.MonthId == monthId && x.UserId == userId).ToList().OrderByDescending(x => x.MonthId);
                 List<ExpenseRecord> record = new List<ExpenseRecord>();
 
                 foreach (var items in result)
@@ -198,10 +226,10 @@ namespace PersonalFinanceMgmtApp.BusinessLogicLayer
                 int pageNumber = (page ?? 1);
                 return record.ToPagedList(pageNumber, pageSize);
             }
-            
-            else if(expenseId != null && monthId == null)
+
+            else if (expenseId != null && monthId == null)
             {
-                var result = db.NewExpenseEntryRecords.Where(x=>x.ExpenseTypeId == expenseId && x.UserId == userId).ToList().OrderBy(x => x.ExpenseTypeId);
+                var result = db.NewExpenseEntryRecords.Where(x => x.ExpenseTypeId == expenseId && x.UserId == userId).ToList().OrderBy(x => x.ExpenseTypeId);
                 List<ExpenseRecord> record = new List<ExpenseRecord>();
 
                 foreach (var items in result)
@@ -282,60 +310,77 @@ namespace PersonalFinanceMgmtApp.BusinessLogicLayer
                     var result = db.NewExpenseEntryRecords.Where(x => x.MonthId == monthId && x.UserId == userId).ToList().OrderByDescending(x => x.MonthId).GroupBy(x => x.MonthId).FirstOrDefault();
                     List<ExpenseRecord> record = new List<ExpenseRecord>();
 
-
-                    foreach (var items in result)
+                    if (result != null)
                     {
-                        var expenseType = db.ExpenseTypes.Where(x => x.ExpenseTypeId == items.ExpenseTypeId).Select(x => x.ExpenseTypeName).FirstOrDefault().ToString();
-                        var month = items.EntryDate.Value.Month;
-                        record.Add(new ExpenseRecord()
+                        foreach (var items in result)
                         {
-                            entryDate = Convert.ToDateTime(items.EntryDate),
-                            amount = Convert.ToDouble(items.Amount),
-                            expenseId = Convert.ToInt32(items.ExpenseTypeId),
-                            expenseType = expenseType,
-                            month = Convert.ToString(month)
-                        });
+                            var expenseType = db.ExpenseTypes.Where(x => x.ExpenseTypeId == items.ExpenseTypeId).Select(x => x.ExpenseTypeName).FirstOrDefault().ToString();
+                            var month = items.EntryDate.Value.Month;
+                            record.Add(new ExpenseRecord()
+                            {
+                                entryDate = Convert.ToDateTime(items.EntryDate),
+                                amount = Convert.ToDouble(items.Amount),
+                                expenseId = Convert.ToInt32(items.ExpenseTypeId),
+                                expenseType = expenseType,
+                                month = Convert.ToString(month)
+                            });
 
+                        }
+                        int pageSize = 5;
+                        int pageNumber = (page ?? 1);
+                        return record.ToPagedList(pageNumber, pageSize);
                     }
-                    int pageSize = 5;
-                    int pageNumber = (page ?? 1);
-                    return record.ToPagedList(pageNumber, pageSize);
+                    else
+                    {
+                        int pageSize = 5;
+                        int pageNumber = (page ?? 1);
+                        return record.ToPagedList(pageNumber, pageSize);
+                    }
+
                 }
                 else
                 {
                     var result = db.NewExpenseEntryRecords.Where(x => x.UserId == userId).ToList().OrderByDescending(x => x.MonthId).GroupBy(x => x.MonthId).FirstOrDefault();
                     List<ExpenseRecord> record = new List<ExpenseRecord>();
 
-
-                    foreach (var items in result)
+                    if (result != null)
                     {
-                        var expenseType = db.ExpenseTypes.Where(x => x.ExpenseTypeId == items.ExpenseTypeId).Select(x => x.ExpenseTypeName).FirstOrDefault().ToString();
-                        var month = items.EntryDate.Value.Month;
-                        record.Add(new ExpenseRecord()
+                        foreach (var items in result)
                         {
-                            entryDate = Convert.ToDateTime(items.EntryDate),
-                            amount = Convert.ToDouble(items.Amount),
-                            expenseId = Convert.ToInt32(items.ExpenseTypeId),
-                            expenseType = expenseType,
-                            month = Convert.ToString(month)
-                        });
+                            var expenseType = db.ExpenseTypes.Where(x => x.ExpenseTypeId == items.ExpenseTypeId).Select(x => x.ExpenseTypeName).FirstOrDefault().ToString();
+                            var month = items.EntryDate.Value.Month;
+                            record.Add(new ExpenseRecord()
+                            {
+                                entryDate = Convert.ToDateTime(items.EntryDate),
+                                amount = Convert.ToDouble(items.Amount),
+                                expenseId = Convert.ToInt32(items.ExpenseTypeId),
+                                expenseType = expenseType,
+                                month = Convert.ToString(month)
+                            });
 
+                        }
+                        int pageSize = 5;
+                        int pageNumber = (page ?? 1);
+                        return record.ToPagedList(pageNumber, pageSize);
                     }
-                    int pageSize = 5;
-                    int pageNumber = (page ?? 1);
-                    return record.ToPagedList(pageNumber, pageSize);
+                    else
+                    {
+                        int pageSize = 5;
+                        int pageNumber = (page ?? 1);
+                        return record.ToPagedList(pageNumber, pageSize);
+                    }
                 }
             }
-            catch(NullReferenceException e)
+            catch (Exception e)
             {
                 throw new NullReferenceException("Value Cannot be null", e);
             }
-            
+
 
         }
         public List<ExpenseForMonthVM> getAllSavedExpenseForMonth(string userId)
         {
-            var result = db.NewExpenseEntryRecords.Where(x=>x.UserId == userId).ToList().OrderByDescending(x => x.MonthId).GroupBy(x => x.ExpenseTypeId);
+            var result = db.NewExpenseEntryRecords.Where(x => x.UserId == userId).ToList().OrderByDescending(x => x.MonthId).GroupBy(x => x.ExpenseTypeId);
 
             List<ExpenseForMonthVM> record = new List<ExpenseForMonthVM>();
 
@@ -382,49 +427,62 @@ namespace PersonalFinanceMgmtApp.BusinessLogicLayer
 
         public List<ExpenseRecord> getSavedExpensebyMonth(int? monthId, string userId)
         {
-            if(monthId != null)
+            if (monthId != null)
             {
-                var result = db.NewExpenseEntryRecords.Where(x=>x.MonthId == monthId && x.UserId == userId).ToList().OrderByDescending(x => x.MonthId).GroupBy(x => x.MonthId).FirstOrDefault();
+                var result = db.NewExpenseEntryRecords.Where(x => x.MonthId == monthId && x.UserId == userId).ToList().OrderByDescending(x => x.MonthId).GroupBy(x => x.MonthId).FirstOrDefault();
                 List<ExpenseRecord> record = new List<ExpenseRecord>();
-
-                foreach (var items in result)
+                if (result != null)
                 {
-                    var expenseType = db.ExpenseTypes.Where(x => x.ExpenseTypeId == items.ExpenseTypeId).Select(x => x.ExpenseTypeName).FirstOrDefault().ToString();
-                    var month = items.EntryDate.Value.Month;
-                    record.Add(new ExpenseRecord()
+                    foreach (var items in result)
                     {
-                        entryDate = Convert.ToDateTime(items.EntryDate),
-                        amount = Convert.ToDouble(items.Amount),
-                        expenseId = Convert.ToInt32(items.ExpenseTypeId),
-                        expenseType = expenseType,
-                        month = Convert.ToString(month)
-                    });
+                        var expenseType = db.ExpenseTypes.Where(x => x.ExpenseTypeId == items.ExpenseTypeId).Select(x => x.ExpenseTypeName).FirstOrDefault().ToString();
+                        var month = items.EntryDate.Value.Month;
+                        record.Add(new ExpenseRecord()
+                        {
+                            entryDate = Convert.ToDateTime(items.EntryDate),
+                            amount = Convert.ToDouble(items.Amount),
+                            expenseId = Convert.ToInt32(items.ExpenseTypeId),
+                            expenseType = expenseType,
+                            month = Convert.ToString(month)
+                        });
 
+                    }
+                    return record;
                 }
-                return record;
+                else
+                {
 
+                    return record;
+                }
             }
             else
             {
                 var result = db.NewExpenseEntryRecords.Where(x => x.UserId == userId).ToList().OrderByDescending(x => x.MonthId).GroupBy(x => x.MonthId).FirstOrDefault();
                 List<ExpenseRecord> record = new List<ExpenseRecord>();
-
-                foreach (var items in result)
+                if (result != null)
                 {
-                    var expenseType = db.ExpenseTypes.Where(x => x.ExpenseTypeId == items.ExpenseTypeId).Select(x => x.ExpenseTypeName).FirstOrDefault().ToString();
-                    var month = items.EntryDate.Value.Month;
-                    record.Add(new ExpenseRecord()
+                    foreach (var items in result)
                     {
-                        entryDate = Convert.ToDateTime(items.EntryDate),
-                        amount = Convert.ToDouble(items.Amount),
-                        expenseId = Convert.ToInt32(items.ExpenseTypeId),
-                        expenseType = expenseType,
-                        month = Convert.ToString(month)
-                    });
+                        var expenseType = db.ExpenseTypes.Where(x => x.ExpenseTypeId == items.ExpenseTypeId).Select(x => x.ExpenseTypeName).FirstOrDefault().ToString();
+                        var month = items.EntryDate.Value.Month;
+                        record.Add(new ExpenseRecord()
+                        {
+                            entryDate = Convert.ToDateTime(items.EntryDate),
+                            amount = Convert.ToDouble(items.Amount),
+                            expenseId = Convert.ToInt32(items.ExpenseTypeId),
+                            expenseType = expenseType,
+                            month = Convert.ToString(month)
+                        });
+
+                    }
+                    return record;
 
                 }
-                return record;
+                else
+                {
 
+                    return record;
+                }
             }
 
         }
@@ -454,14 +512,15 @@ namespace PersonalFinanceMgmtApp.BusinessLogicLayer
                     ExpenseTypeId = exp.expenseId,
                     Amount = Convert.ToDecimal(exp.ExpenseAmount),
                     UserId = userId
-            };
-            db.NewExpenseRecords.Add(ner);
-            db.SaveChanges();
-            return "Saved Successfully!!!";
+                };
+                db.NewExpenseRecords.Add(ner);
+                db.SaveChanges();
+                return "Saved Successfully!!!";
             }
             else
             {
-                return "Error in Saving!!!";            }
+                return "Error in Saving!!!";
+            }
         }
 
 

@@ -1,0 +1,10 @@
+﻿body {
+}
+.EnterDate, select#expenseId{
+    border: 1px solid black;
+}
+
+.dateSection{
+    display: flex;
+    
+}

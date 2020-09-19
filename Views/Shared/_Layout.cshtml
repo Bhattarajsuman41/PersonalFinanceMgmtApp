@@ -27,16 +27,17 @@
 
     <div class=" body-content">
         @using Microsoft.AspNet.Identity
-        @if (Request.IsAuthenticated)
+        @*@if (Request.IsAuthenticated)*@
+        @if (Session["user"] != null)
         {
-
-            <div class="wrapper d-flex align-items-stretch">
-                @Html.Partial("_SideBarPartial")
-                <div id="content" class="p-4 p-md-5">
-                    @RenderBody()
+              <div class="wrapper d-flex align-items-stretch">
+                    @Html.Partial("_SideBarPartial")
+                    <div id="content" class="p-4 p-md-5">
+                        @RenderBody()
+                    </div>
                 </div>
-            </div>
-
+           
+           
 
         }
         else

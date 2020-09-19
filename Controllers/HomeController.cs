@@ -9,8 +9,20 @@ namespace PersonalFinanceMgmtApp.Controllers
     public class HomeController : Controller
     {
         public ActionResult Index()
+
+
+
         {
-            if (Request.IsAuthenticated)
+
+            //if (Request.IsAuthenticated)
+            //{
+            //    return RedirectToAction("Index", "Dashboard");
+            //}
+            //else
+            //{
+            //    return View();
+            //}             
+            if (Session["user"] != null)
             {
                 return RedirectToAction("Index", "Dashboard");
             }
@@ -18,7 +30,9 @@ namespace PersonalFinanceMgmtApp.Controllers
             {
                 return View();
             }
+
         }
+
 
         public ActionResult About()
         {

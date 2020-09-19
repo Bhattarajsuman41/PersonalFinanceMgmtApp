@@ -17,5 +17,11 @@ namespace PersonalFinanceMgmtApp
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
+
+        //protected void Application_Error()
+        //{
+        //    var ex = Server.GetLastError();
+        //    //log an exception
+        //}
     }
 }

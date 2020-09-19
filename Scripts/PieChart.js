@@ -1,7 +1,7 @@
 ﻿var ctxP = document.getElementById("pieChart").getContext('2d');
 var myPieChart = new Chart(ctxP, {
     type: 'pie',
-    
+    labels: "My pie Chart",
     data: {
         labels: ["Balance", "Shopping", "Bills", "Food&Drinks", "Others"],
         datasets: [{

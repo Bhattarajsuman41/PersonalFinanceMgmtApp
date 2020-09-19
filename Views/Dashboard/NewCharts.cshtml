@@ -1,13 +1,5 @@
 ﻿@model PersonalFinanceMgmtApp.ViewModel.ChartsVM
     <div class="dropdown mb-3">
-        @*<button class="btn btn-secondary dropdown-toggle font-weight-normal" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Select Chart
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item" href="">Line</a>
-            <a class="dropdown-item" href="#">Pie</a>
-            <a class="dropdown-item" href="#">Scatter</a>
-        </div>*@
         @Html.DropDownListFor(model => model.chartId, new SelectList(Model.chartsValue, "Value", "Text"),"Select Chart...")
     </div>
 
@@ -16,11 +8,11 @@
     @Html.DropDownListFor(model => model.monthId, new SelectList(Model.Months, "Value", "Text"),"Select Month..")
     <canvas id="pieChart"></canvas>
 </div>
-<div class="SelectedScatterChart border border-primary rounded" style="display:none;">
+@*<div class="SelectedScatterChart border border-primary rounded" style="display:none;">
     @Html.DropDownListFor(model => model.monthId, new SelectList(Model.Months, "Value", "Text"), "Select Month..")
     @Html.DropDownListFor(model => model.expenseId, new SelectList(Model.expenseTypes, "Value", "Text"), "Select Expense..")
     <canvas id="scatterChart"></canvas>
-</div>
+</div>*@
 
 <script src="~/Scripts/jquery.min.js"></script>
 <script src="~/Scripts/mdb.min.js"></script>
@@ -28,7 +20,6 @@
 <script src="~/Scripts/chart.js"></script>
 <script src="~/Scripts/BarChart.js"></script>
 <script src="~/Scripts/PieChart.js"></script>
-<script src="~/Scripts/ScatterChart.js"></script>
 
 <script type="text/javascript">
     $(document).ready(function () {
@@ -80,7 +71,6 @@
                        
                         myLineChart.update();
                         $("#lineChart").show();
-                        $(".SelectedScatterChart").hide();
                         $(".SelectPieChart").hide();
                     },
                     error: function () {
@@ -105,16 +95,17 @@
                         debugger;
 
                         var result = JSON.parse(response);
+                   
+                            myPieChart.data.datasets[0].data[0] = result.totalBlc;
+                            myPieChart.data.datasets[0].data[1] = result.totalShping;
+                            myPieChart.data.datasets[0].data[2] = result.totalBills;
+                            myPieChart.data.datasets[0].data[3] = result.TotalFd;
+                            myPieChart.data.datasets[0].data[4] = result.TotalOthers;
+                            myPieChart.update();
+                            $("#lineChart").hide();
+                            $(".SelectPieChart").show();
+                     
 
-                        myPieChart.data.datasets[0].data[0] = result.totalBlc;
-                        myPieChart.data.datasets[0].data[1] = result.totalShping;
-                        myPieChart.data.datasets[0].data[2] = result.totalBills;
-                        myPieChart.data.datasets[0].data[3] = result.TotalFd;
-                        myPieChart.data.datasets[0].data[4] = result.TotalOthers;
-                        myPieChart.update();
-                        $("#lineChart").hide();
-                        $(".SelectedScatterChart").hide();
-                        $(".SelectPieChart").show();
                     },
                     error: function () {
                         alert("Error!!!")
@@ -126,11 +117,7 @@
 
            
           
-            if (selectedvalue == "Scatter") {
-                $("#lineChart").hide();
-                $(".SelectPieChart").hide();
-                $(".SelectedScatterChart").show();
-            }
+          
 
         });
 
@@ -147,7 +134,7 @@
                     debugger;
 
                     var result = JSON.parse(response);
-
+                    if (result.MonthName != null) {
                     myPieChart.data.datasets[0].data[0] = result.totalBlc;
                     myPieChart.data.datasets[0].data[1] = result.totalShping;
                     myPieChart.data.datasets[0].data[2] = result.totalBills;
@@ -155,8 +142,11 @@
                     myPieChart.data.datasets[0].data[4] = result.TotalOthers;
                     myPieChart.update();
                     $("#lineChart").hide();
-                    $(".SelectedScatterChart").hide();
-                    $(".SelectPieChart").show();
+                        $(".SelectPieChart").show();
+                    }
+                    else {
+                        alert("there is no value for this month!!! Please enter new expense !!!");
+                    }
                 },
                 error: function () {
                     alert("Error!!!")
